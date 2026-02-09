@@ -120,7 +120,22 @@ if ([string]::IsNullOrEmpty($UploadVolPath)) {
     Abort "Upload-Volume '$UPLOAD_VOL' nicht gefunden"
 }
 
-Run "rsync -avz --delete ${UploadVolPath}/ ${SERVER}:${UploadVolPath}/"
+# Run "rsync -avz --delete ${UploadVolPath}/ ${SERVER}:${UploadVolPath}/"
+# ==================================================
+# 4. UPLOAD VOLUME SYNC (FORCE WSL RSYNC)
+# ==================================================
+
+# Check: rsync in WSL vorhanden?
+$rsyncCheck = wsl which rsync 2>$null
+if (-not $rsyncCheck) {
+    Abort "rsync ist in WSL nicht installiert (sudo apt install rsync)"
+}
+
+# Pfade fuer WSL konvertieren (Windows -> /mnt/c/...)
+$UploadVolPathWSL = "/mnt" + ($UploadVolPath -replace ":", "" -replace "\\", "/")
+
+Run "wsl rsync -avz --delete `"$UploadVolPathWSL/`" ${SERVER}:$UploadVolPath/"
+
 
 # ==================================================
 # 5. REMOTE RESTORE (EINZELNE SCHRITTE)
