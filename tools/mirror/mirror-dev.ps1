@@ -126,7 +126,13 @@ if ([string]::IsNullOrEmpty($UploadVolPath)) {
 # ==================================================
 
 # Check: rsync in WSL vorhanden?
-$rsyncCheck = wsl which rsync 2>$null
+#$rsyncCheck = wsl which rsync 2>$null
+# Check: rsync in Ubuntu-WSL vorhanden?
+$rsyncCheck = wsl -d Ubuntu which rsync 2>$null
+if (-not $rsyncCheck) {
+    Abort "rsync ist in Ubuntu-WSL nicht installiert"
+}
+
 if (-not $rsyncCheck) {
     Abort "rsync ist in WSL nicht installiert (sudo apt install rsync)"
 }
@@ -134,7 +140,9 @@ if (-not $rsyncCheck) {
 # Pfade fuer WSL konvertieren (Windows -> /mnt/c/...)
 $UploadVolPathWSL = "/mnt" + ($UploadVolPath -replace ":", "" -replace "\\", "/")
 
-Run "wsl rsync -avz --delete `"$UploadVolPathWSL/`" ${SERVER}:$UploadVolPath/"
+#Run "wsl rsync -avz --delete `"$UploadVolPathWSL/`" ${SERVER}:$UploadVolPath/"
+Run "wsl -d Ubuntu rsync -avz --delete `"$UploadVolPathWSL/`" ${SERVER}:$UploadVolPath/"
+
 
 
 # ==================================================
