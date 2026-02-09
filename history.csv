@@ -1,0 +1,14 @@
+﻿Zeitpunkt;Alter Status;Neuer Status;Quelle;Grund;Geändert von;E-Mail
+2025-01-06T15:30:00.000Z;maintenance;active;manual;Wartung abgeschlossen, neuer Filter eingebaut;Anna Service;service@gtower.local
+2025-01-06T08:00:00.000Z;active;maintenance;manual;Planmäßige Quartalswartung Q4;Anna Service;service@gtower.local
+2024-12-21T00:02:00.000Z;offline;active;system;Stromversorgung stabilisiert;System Administrator;admin@gtower.local
+2024-12-20T23:15:00.000Z;active;offline;system;Spannungsschwankung detektiert;System Administrator;admin@gtower.local
+2024-10-01T17:00:00.000Z;maintenance;active;manual;Wartung abgeschlossen, Sensor kalibriert;Max Operator;operator@gtower.local
+2024-10-01T08:00:00.000Z;active;maintenance;manual;Planmäßige Quartalswartung Q3;Max Operator;operator@gtower.local
+2024-07-01T14:00:00.000Z;maintenance;active;manual;Wartung abgeschlossen;Anna Service;service@gtower.local
+2024-07-01T08:00:00.000Z;active;maintenance;manual;Planmäßige Quartalswartung Q2;Anna Service;service@gtower.local
+2024-06-15T02:45:00.000Z;offline;active;system;Netzwerk wiederhergestellt;System Administrator;admin@gtower.local
+2024-06-15T02:10:00.000Z;active;offline;system;Kurzer Netzwerkausfall;System Administrator;admin@gtower.local
+2024-04-01T16:30:00.000Z;maintenance;active;manual;Wartung abgeschlossen, alle Systeme OK;Anna Service;service@gtower.local
+2024-04-01T08:00:00.000Z;active;maintenance;manual;Planmäßige Quartalswartung Q1;Anna Service;service@gtower.local
+2024-01-15T08:00:00.000Z;;active;manual;Erstinbetriebnahme;System Administrator;admin@gtower.local

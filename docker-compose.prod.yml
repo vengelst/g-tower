@@ -1,0 +1,15 @@
+# =============================================================================
+# docker-compose.prod.yml – Production-only Overrides für G-Tower
+# =============================================================================
+# Zweck:         Ergänzt docker-compose.yml um prod-spezifische Port-Mappings.
+#               Dadurch bleibt der Dev-Mode (docker-compose.override.yml)
+#               sauber: nur Vite (:5173) ist extern exposed.
+#
+# Start (Prod):
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# =============================================================================
+
+services:
+  frontend:
+    ports:
+      - "80:8080"                     # nginx hört intern auf 8080, extern Port 80

@@ -1,0 +1,24 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Build
+dist/
+build/
+
+# Env
+.env
+.env.*
+
+# Docker volumes / uploads
+backend/uploads/
+backend_uploads/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Windows reserved files
+nul

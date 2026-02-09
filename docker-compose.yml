@@ -1,45 +1,83 @@
+# =============================================================================
+# docker-compose.yml – Produktions-Basiskonfiguration für G-Tower
+# =============================================================================
+# Zweck:         Definiert alle drei Services (DB, Backend, Frontend) für den
+#                Produktionsbetrieb. Wird in Dev automatisch mit der Datei
+#                docker-compose.override.yml zusammengeführt (Docker-Standard).
+# Rolle:         Zentrale Container-Orchestrierung. In Development wird sie
+#                automatisch mit docker-compose.override.yml gemergt.
+#                In Production wird sie mit docker-compose.prod.yml genutzt:
+#                  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+# Abhängigkeiten: .env (Secrets), backend/init.sql (DB-Schema),
+#                backend/Dockerfile, frontend/Dockerfile
+# Wichtige Annahmen:
+#   - Prod-Targets in den Dockerfiles erzeugen optimierte Images
+#     (Multi-Stage Build, kein Dev-Tooling)
+#   - DB-Port ist in Prod NICHT nach außen exposed (nur container-intern)
+#   - Seed-Daten werden in Prod NIEMALS geladen
+#   - Backend-Healthcheck stellt sicher, dass der Backend-Container erst
+#     startet, wenn PostgreSQL bereit ist (depends_on + condition)
+# Änderungshinweise:
+#   - Neue Services hier definieren, dev-spezifische Overrides in die
+#     docker-compose.override.yml auslagern
+#   - Secrets niemals hardcoden – immer aus .env laden
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL-Datenbank – Persistente Datenhaltung für Türme, User, Tickets etc.
+  # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
     container_name: gtower-db
-    env_file: .env
+    env_file: .env                    # Lädt POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backend/init.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - postgres_data:/var/lib/postgresql/data                              # Persistentes Daten-Volume
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/01_schema.sql       # Schema wird bei erstem Start ausgeführt
     healthcheck:
+      # Backend wartet auf diesen Check, bevor es sich verbindet
       test: ["CMD-SHELL", "pg_isready -U gtower -d gtower"]
       interval: 5s
       timeout: 5s
       retries: 5
 
+  # ---------------------------------------------------------------------------
+  # Backend – Express/TypeScript REST-API (Port 3000)
+  # ---------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
-      target: prod
+      target: prod                    # Multi-Stage: kompiliertes JS, kein Dev-Tooling
     container_name: gtower-backend
-    env_file: .env
+    env_file: .env                    # Lädt DATABASE_URL, JWT_SECRET, CORS_ORIGINS etc.
     environment:
-      PORT: "3000"
-      NODE_ENV: production
-      UPLOAD_DIR: /app/uploads
+      PORT: "3000"                    # Interner Listening-Port
+      NODE_ENV: production            # Aktiviert Prod-Guards (fehlende Secrets → Startup-Abbruch)
+      UPLOAD_DIR: /app/uploads        # Pfad für Dokument-Uploads im Container
     ports:
-      - "3000:3000"
+      - "3000:3000"                   # API extern erreichbar
     volumes:
-      - backend_uploads:/app/uploads
+      - backend_uploads:/app/uploads  # Persistentes Volume für hochgeladene Dokumente
     depends_on:
       postgres:
-        condition: service_healthy
+        condition: service_healthy    # Startet erst, wenn DB-Healthcheck grün ist
 
+  # ---------------------------------------------------------------------------
+  # Frontend – React/Vite SPA, in Prod via nginx ausgeliefert (Port 80→8080)
+  # ---------------------------------------------------------------------------
   frontend:
     build:
       context: ./frontend
-      target: prod
+      target: prod                    # Multi-Stage: Vite-Build → nginx-Container
     container_name: gtower-frontend
-    ports:
-      - "80:8080"
+    # Port-Mapping wird bewusst nicht in der Basis-Datei definiert:
+    # - Dev: docker-compose.override.yml (Vite: 5173)
+    # - Prod: docker-compose.prod.yml (nginx: 80→8080)
     depends_on:
-      - backend
+      - backend                       # Frontend braucht Backend für API-Calls
 
+# Benannte Volumes – bleiben bei `docker compose down` erhalten,
+# werden nur bei `docker compose down -v` gelöscht
 volumes:
-  postgres_data:
-  backend_uploads:
+  postgres_data:                      # PostgreSQL-Datenverzeichnis
+  backend_uploads:                    # Hochgeladene Tower-Dokumente

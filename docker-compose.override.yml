@@ -1,30 +1,60 @@
-# Dev-Override: Wird automatisch bei `docker compose up` gemergt.
-# In Prod explizit nur die Basis-Datei nutzen:
-#   docker compose -f docker-compose.yml up -d
+# =============================================================================
+# docker-compose.override.yml – Entwicklungs-Overrides für G-Tower
+# =============================================================================
+# Zweck:         Überschreibt/erweitert die Produktions-Basiskonfiguration
+#                (docker-compose.yml) für den lokalen Entwicklungsbetrieb.
+# Rolle:         Docker Compose mergt diese Datei automatisch bei
+#                `docker compose up`. Dadurch werden Dev-Features aktiviert:
+#                Hot-Reload, Seed-Daten, DB-Port-Zugriff von außen.
+# Abhängigkeiten: docker-compose.yml (Basis), backend/seed.sql (Testdaten)
+# Wichtige Annahmen:
+#   - In Produktion wird diese Datei NICHT geladen.
+#     Production-Start: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#   - seed.sql enthält Testbenutzer mit Klartextpasswörtern – NIE in Prod nutzen
+#   - Source-Volumes ermöglichen Live-Code-Änderungen ohne Rebuild
+#   - Seed-Daten werden nur bei jungfräulicher DB geladen
+#     (docker-entrypoint-initdb.d läuft nur bei leerem Datenverzeichnis)
+# Änderungshinweise:
+#   - Neue Dev-spezifische Einstellungen gehören hierher, nicht in die Basis
+#   - Bei Schema-Änderungen (init.sql) muss das Volume gelöscht werden:
+#     docker compose down -v && docker compose up -d
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL – Dev-Erweiterungen
+  # ---------------------------------------------------------------------------
   postgres:
     ports:
-      - "5432:5432"
+      - "5432:5432"                   # DB-Port nach außen exposed (z.B. für pgAdmin, DBeaver)
     volumes:
+      # Seed-Daten werden als 02_ geladen (nach 01_schema = init.sql)
+      # Enthält Testbenutzer, Beispiel-Türme, Status-Historien, Tickets, Lifecycle-Daten
       - ./backend/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
 
+  # ---------------------------------------------------------------------------
+  # Backend – Dev-Target mit tsx watch (Hot-Reload für TypeScript)
+  # ---------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
-      target: dev
+      target: dev                     # Dockerfile dev-Stage: tsx watch statt kompiliertes JS
     environment:
-      NODE_ENV: development
+      NODE_ENV: development           # Deaktiviert Prod-Guards, aktiviert ausführliche Fehlerausgabe
     volumes:
-      - ./backend/src:/app/src
+      - ./backend/src:/app/src        # Source-Mount: Änderungen an .ts-Dateien triggern Neustart
 
+  # ---------------------------------------------------------------------------
+  # Frontend – Vite Dev Server mit HMR (Hot Module Replacement)
+  # ---------------------------------------------------------------------------
   frontend:
     build:
       context: ./frontend
-      target: dev
+      target: dev                     # Dockerfile dev-Stage: Vite Dev Server statt nginx
     ports:
-      - "5173:5173"
+      - "5173:5173"                   # Vite Dev Server Port
     environment:
-      - VITE_API_URL=http://localhost:3000
+      - VITE_API_URL=http://localhost:3000   # API-URL für den Browser (nicht container-intern!)
     volumes:
-      - ./frontend/src:/app/src
-      - ./frontend/index.html:/app/index.html
+      - ./frontend/src:/app/src              # Source-Mount: Änderungen an Komponenten → sofortiges HMR
+      - ./frontend/index.html:/app/index.html  # HTML-Einstiegspunkt ebenfalls live aktualisierbar

@@ -1,18 +1,45 @@
+/**
+ * index.css – Globale Styles und Tailwind-Direktiven für G-Tower
+ * =============================================================================
+ * Zweck:         Importiert Tailwind CSS Layers und definiert globale Utility-Klassen.
+ * Rolle:         Wird in main.tsx importiert. Tailwind generiert hier die
+ *                Utility-Klassen basierend auf der tailwind.config.js.
+ * Abhängigkeiten: tailwindcss (PostCSS Plugin)
+ * Wichtige Annahmen:
+ *   - @tailwind Direktiven müssen in genau dieser Reihenfolge stehen
+ *   - Eigene Utility-Klassen (.btn, .input, .card etc.) nutzen @apply
+ *   - Leaflet z-index wird auf 0 gesetzt, damit Modals darüber liegen
+ *   - animate-slide-in wird für den Detail-Drawer (Slide-over) verwendet
+ * Änderungshinweise:
+ *   - Neue globale Styles hier ergänzen, komponentenspezifische Styles in die
+ *     jeweilige Komponente
+ */
+
+/* Tailwind CSS Layers: base (Reset), components (Klassen), utilities (Hilfsfunktionen) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Globale Body-Styles: Hellgrauer Hintergrund, dunkle Schrift */
 body { @apply bg-gray-50 text-gray-900; }
+
+/* ── Wiederverwendbare Button-Klassen ─────────────────── */
 .btn { @apply px-4 py-2 rounded-lg font-medium transition-colors duration-200 disabled:opacity-50; }
 .btn-primary { @apply bg-blue-600 text-white hover:bg-blue-700; }
 .btn-secondary { @apply bg-gray-200 text-gray-800 hover:bg-gray-300; }
 .btn-danger { @apply bg-red-600 text-white hover:bg-red-700; }
+
+/* ── Formular-Elemente ────────────────────────────────── */
 .input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors; }
 .label { @apply block text-sm font-medium text-gray-700 mb-1; }
+
+/* ── Karten-Container ─────────────────────────────────── */
 .card { @apply bg-white rounded-lg shadow-sm border border-gray-200; }
 
+/* Leaflet-Karte: z-index 0, damit Modals und Drawers darüber liegen */
 .leaflet-container { z-index: 0; }
 
+/* ── Animation: Slide-in von rechts (für Detail-Drawer) ── */
 @keyframes slide-in {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }

@@ -12,7 +12,12 @@
       "Bash(npm ls:*)",
       "Bash(docker restart:*)",
       "Bash(timeout:*)",
-      "Bash(ping:*)"
+      "Bash(ping:*)",
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(docker volume rm:*)",
+      "Bash(python:*)",
+      "Bash(docker cp:*)"
     ]
   }
 }
