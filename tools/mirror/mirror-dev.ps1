@@ -10,6 +10,8 @@ $ErrorActionPreference = "Stop"
 $SERVER     = "root@qtower.workteams.eu"        # DEV SERVER
 $REMOTE_DIR = "/opt/g-tower"
 
+$DB_SERVICE = "postgres"   # ODER der Name aus docker compose ps
+
 $DB_NAME    = "gtower"
 $DB_USER    = "gtower"
 
