@@ -1,0 +1,64 @@
+Du arbeitest als Senior Software Architect und Code-Analyst.
+
+Analysiere das gesamte Projekt im aktuellen Workspace (Ordner: g-tower) vollständig.
+
+Ziele der Analyse:
+1. Ermittle, welche Funktionen und Module tatsächlich implementiert sind.
+2. Unterscheide klar zwischen:
+   - vollständig implementiert
+   - teilweise implementiert / vorbereitet
+   - nur geplant / TODO / Stub
+3. Analysiere Frontend, Backend, Datenbank, Docker/Compose und Tooling.
+4. Identifiziere vorhandene API-Endpunkte und deren Zweck.
+5. Identifiziere erkennbare Architekturentscheidungen.
+6. Erkenne technische Schulden, TODOs, FIXMEs und problematische Stellen.
+7. Bewerte den Reifegrad der Anwendung (Prototyp / MVP / fortgeschritten).
+
+Erstelle anschließend eine Datei `DEV_STATE.md` im Projekt-Root mit folgender Struktur:
+
+---
+# DEV_STATE – G-TOWER / Q-TOWER APP
+
+## 1. Projektüberblick
+(Kurze Zusammenfassung der App und ihres Zwecks, basierend auf dem Code)
+
+## 2. Architekturübersicht
+- Frontend (Technologie, Status)
+- Backend (Technologie, Status)
+- Datenbank (Typ, Schema, Status)
+- Docker / Deployment
+
+## 3. Implementierte Funktionen
+Liste nur Funktionen auf, die anhand des Codes tatsächlich existieren.
+
+## 4. Teilweise implementierte / vorbereitete Funktionen
+(z. B. Routen ohne Logik, UI ohne Backend-Anbindung)
+
+## 5. Fehlende / noch nicht implementierte Kernfunktionen
+(nur wenn aus Code-Struktur oder TODOs ableitbar)
+
+## 6. API-Übersicht
+Auflistung vorhandener Endpunkte mit kurzer Beschreibung.
+
+## 7. Datenbank-Analyse
+- Tabellen
+- Relationen
+- Seed-Logik
+- erkennbare Probleme
+
+## 8. Bekannte technische Probleme
+(z. B. harte Fehler, Rollenprobleme, doppelte Seeds, fehlende Migrationslogik)
+
+## 9. Reifegrad-Einschätzung
+(Klartext, keine Beschönigung)
+
+## 10. Empfehlungen für nächste Schritte
+(konkret, technisch sinnvoll priorisiert)
+
+Wichtige Regeln:
+- Erfinde nichts.
+- Beschreibe nur, was sich aus dem Code eindeutig ableiten lässt.
+- Nutze klare, technische Sprache.
+- Keine Annahmen über geplante Features außerhalb des Codes.
+
+Erzeuge oder überschreibe die Datei `DEV_STATE.md`.

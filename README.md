@@ -40,6 +40,17 @@ Tower-Management-System mit Backend (Express/TypeScript), Frontend (React/Vite) 
 - DEV (lokal): `docker compose up -d` → Frontend `http://localhost:5173` (Vite), Backend `http://localhost:3000`
 - PROD (lokal/prod-like): `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d` → Frontend `http://localhost` (nginx)
 
+## DEV Environment Note (local + server)
+
+Der DEV-Stack ist jetzt über `docker-compose.dev.yml` + `.env.dev` standardisiert (lokal und auf einem DEV-Server).
+
+Start:
+```bash
+docker compose -f docker-compose.dev.yml --env-file .env.dev up -d --build
+```
+
+Warnung: **Nicht** `docker compose down -v` in DEV ausführen (löscht DB + Uploads).
+
 ### Development
 
 <!-- Dev-Setup: Alle drei Container mit Hot-Reload und Testdaten -->

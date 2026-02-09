@@ -22,7 +22,9 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    strictPort: true,
     host: true, // Auf 0.0.0.0 binden, damit Docker-Container erreichbar ist
+    allowedHosts: ['localhost', 'qtower.workteams.eu'],
     proxy: {
       // API-Proxy: Leitet /api-Requests an das Backend weiter (nur Dev)
       '/api': {

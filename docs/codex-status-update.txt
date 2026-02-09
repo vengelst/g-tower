@@ -1,0 +1,20 @@
+Du arbeitest als Senior Software Architect.
+
+Analysiere das gesamte Projekt im aktuellen Workspace (g-tower) erneut.
+
+Vergleiche den aktuellen Code-Zustand mit der bestehenden Datei `DEV_STATE.md`.
+
+Aktualisiere `DEV_STATE.md` wie folgt:
+1. Markiere neu implementierte Funktionen als umgesetzt.
+2. Verschiebe Funktionen von „teilweise implementiert“ zu „implementiert“, wenn der Code dies belegt.
+3. Entferne erledigte bekannte Probleme.
+4. Ergänze neue technische Probleme oder TODOs, die im Code sichtbar sind.
+5. Aktualisiere Architektur- oder Infrastruktur-Abschnitte nur, wenn der Code dies eindeutig zeigt.
+
+Wichtige Regeln:
+- Ändere nichts, was nicht klar aus dem Code ableitbar ist.
+- Erfinde keine Features oder Planungen.
+- Bewahre Struktur und Stil von `DEV_STATE.md`.
+- Wenn etwas unklar ist, lasse den bestehenden Text unverändert.
+
+Speichere die aktualisierte Version von `DEV_STATE.md`.

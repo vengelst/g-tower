@@ -39,12 +39,13 @@ if (missing.length > 0) {
 import app from './app.js';
 import { runSystemChecks } from './services/systemChecks.js';
 
-const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+const PORT = Number(process.env.PORT || 3000);
 // Scheduler-Intervall: Wie oft System-Checks laufen (Standard: 60 Sekunden)
 const SYSTEM_CHECK_INTERVAL_MS = parseInt(process.env.SYSTEM_CHECK_INTERVAL_MS || '60000', 10);
 
-app.listen(PORT, () => {
-  console.log(`G-Tower Backend running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+  console.log(`G-Tower Backend listening on http://${HOST}:${PORT}`);
   console.log(`Health: http://localhost:${PORT}/api/health`);
 
   // System-Check-Scheduler: Prüft regelmäßig battery_level und last_heartbeat

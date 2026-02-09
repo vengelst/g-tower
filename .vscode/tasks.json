@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Codex: Full Project Analysis (DEV_STATE)",
+      "type": "shell",
+      "command": "codex",
+      "args": [
+        "--approval-mode",
+        "auto-edit",
+        "Du arbeitest als Senior Software Architect und Code-Analyst. Analysiere das gesamte Projekt im aktuellen Workspace (g-tower) vollständig und erstelle oder überschreibe DEV_STATE.md gemäß der definierten Struktur. Nutze ausschließlich den Code als Wahrheit. Erfinde nichts."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Codex: Update DEV_STATE",
+      "type": "shell",
+      "command": "codex",
+      "args": [
+        "--approval-mode",
+        "auto-edit",
+        "Analysiere das gesamte Projekt erneut. Vergleiche den aktuellen Code-Zustand mit DEV_STATE.md und aktualisiere DEV_STATE.md nur dort, wo der Code dies eindeutig belegt. Bewahre Struktur und Stil. Erfinde nichts."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Codex: Generate CI DEV_STATE",
+      "type": "shell",
+      "command": "codex",
+      "args": [
+        "--approval-mode",
+        "auto-edit",
+        "Du arbeitest als automatisierter Code-Analyse-Agent. Analysiere das gesamte Projekt ausschließlich anhand des Codes und erzeuge DEV_STATE.generated.md in deterministischer, neutraler Form. Keine Annahmen, keine Planungen."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
