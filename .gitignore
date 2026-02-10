@@ -1,7 +1,45 @@
+# =============================================================================
+# .gitignore – Ausgeschlossene Dateien und Verzeichnisse für G-Tower
+# =============================================================================
+# Zweck:         Verhindert, dass generierte Artefakte, Secrets und
+#                betriebssystemspezifische Dateien ins Repository gelangen.
+# Rolle:         Gilt für das gesamte Monorepo (Backend + Frontend).
+#                Backend und Frontend haben KEINE eigenen .gitignore-Dateien.
+# Wichtige Annahmen:
+#   - node_modules/ und dist/ existieren jeweils in backend/ und frontend/
+#   - .env enthält echte Secrets (DB-Passwort, JWT-Secret) und darf NIE
+#     eingecheckt werden
+#   - uploads/ ist für hochgeladene Dokumente – nur .gitkeep wird getrackt,
+#     damit das Verzeichnis im Repo existiert
+# =============================================================================
+
+# Abhängigkeiten – werden per `npm install` aus package-lock.json reproduziert
 node_modules/
+
+# Kompilierte Ausgabe – wird per Build-Prozess (tsc / vite build) erzeugt
 dist/
+
+# Hochgeladene Dokumente – werden im Docker-Volume persistiert, nicht im Repo
 uploads/*
 !uploads/.gitkeep
+
+# Log-Dateien – entstehen z.B. durch npm oder Docker
 *.log
+
+# macOS Finder-Metadaten
 .DS_Store
-.env
+
+# Umgebungsvariablen – enthält Secrets, darf NIEMALS eingecheckt werden
+# Für die Struktur siehe: Dokumentation in README.md
+.env.*
+!.env.example
+
+# Docker / lokale Persistenz
+data/
+postgres_data/
+
+# Windows / OneDrive
+Thumbs.db
+desktop.ini
+*.lnk
+

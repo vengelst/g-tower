@@ -2,44 +2,57 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: gtower-db
-    env_file: .env
+    env_file: .env.dev
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Schema + DEV Seed (läuft nur bei leerem Volume)
       - ./backend/init.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./backend/seed.sql:/docker-entrypoint-initdb.d/02_seed.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gtower -d gtower"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   backend:
     build:
       context: ./backend
-      target: prod
+      target: dev
     container_name: gtower-backend
-    env_file: .env
+    env_file: .env.dev
     environment:
+      HOST: "0.0.0.0"
       PORT: "3000"
-      NODE_ENV: production
-      UPLOAD_DIR: /app/uploads
+      NODE_ENV: development
     ports:
       - "3000:3000"
     volumes:
-      - backend_uploads:/app/uploads
+      - ./backend:/app
+      - backend_node_modules:/app/node_modules
+      - backend_uploads:/data/uploads
     depends_on:
       postgres:
         condition: service_healthy
+    command: npm run dev
 
   frontend:
     build:
       context: ./frontend
-      target: prod
+      target: dev
     container_name: gtower-frontend
+    env_file: .env.dev
     ports:
-      - "80:8080"
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
     depends_on:
       - backend
+    command: npm run dev
 
 volumes:
   postgres_data:
+  backend_node_modules:
+  frontend_node_modules:
   backend_uploads:
+

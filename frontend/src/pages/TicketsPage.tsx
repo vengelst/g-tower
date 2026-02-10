@@ -1,3 +1,37 @@
+/**
+ * @module TicketsPage
+ *
+ * @description
+ * Listenansicht aller Service-Tickets mit Filter- und Paginierungsfunktion.
+ * Ermoeglicht das Erstellen neuer Tickets und die Bearbeitung bestehender
+ * Tickets (Statusaenderung, Loesungsbeschreibung) ueber modale Dialoge.
+ *
+ * @role
+ * Zentrale Verwaltungsseite fuer Service-Tickets. Tickets sind immer einem
+ * Tower zugeordnet und beschreiben Wartungs-, Storungs- oder Inspektionsaufgaben.
+ * Von der TowerDetailPage kann hierher mit voreingestelltem Tower-Filter
+ * navigiert werden (?towerId=...).
+ *
+ * @dependencies
+ * - ticketService        – CRUD-Operationen fuer Service-Tickets
+ * - towerService         – Laedt Tower-Liste fuer das Tower-Filter-Dropdown und das Erstellformular
+ * - AuthContext           – Rollenbasierte Sichtbarkeit (hasMinRole)
+ * - ToastContext          – Erfolgs-/Fehlermeldungen
+ * - DataTable-Komponente  – Generische Tabelle mit Pagination
+ * - StatusBadge           – Farbige Badges fuer Ticket-Status und Prioritaet
+ * - Modal-Komponente      – Wiederverwendbarer Dialog
+ *
+ * @assumptions
+ * - URL-Parameter "status" und "towerId" koennen vorbelegt sein (z.B. von TowerDetailPage).
+ * - Nur Benutzer mit mindestens der Rolle "service" duerfen Tickets erstellen und bearbeiten.
+ * - Die Tower-Liste wird mit limit=200 geladen, was fuer die Dropdown-Auswahl
+ *   ausreichend sein sollte. Bei mehr Towers muesste eine Suchfunktion ergaenzt werden.
+ * - Ticket-Status-Workflow: open -> in_progress -> pending -> resolved -> closed.
+ *
+ * @changelog
+ * - Neue Ticket-Typen muessen im CreateTicket-Modal ergaenzt werden.
+ * - Neue Prioritaets-/Status-Werte erfordern Anpassung der Filter-Dropdowns.
+ */
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ticketService } from '../services/ticketService';
@@ -14,16 +48,20 @@ export default function TicketsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  /** Aktuell ausgewaehltes Ticket fuer die Detailansicht/Bearbeitung */
   const [selected, setSelected] = useState<ServiceTicket | null>(null);
   const [searchParams] = useSearchParams();
+  /** Filter koennen via URL-Query vorbelegt sein (z.B. ?status=open&towerId=xxx) */
   const [statusFilter, setStatusFilter] = useState(searchParams.get('status') || '');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [towerFilter, setTowerFilter] = useState(searchParams.get('towerId') || '');
+  /** Tower-Liste fuer das Filter-Dropdown (wird einmalig beim Mounten geladen) */
   const [towers, setTowers] = useState<Tower[]>([]);
   const [page, setPage] = useState(1);
   const { hasMinRole } = useAuth();
   const { showToast } = useToast();
 
+  /** Einmaliges Laden aller Towers fuer die Filter- und Formular-Dropdowns */
   useEffect(() => { towerService.getAll({ limit: 200 }).then(r => setTowers(r.data)).catch(console.error); }, []);
 
   const load = () => {
@@ -37,8 +75,10 @@ export default function TicketsPage() {
       towerId: towerFilter || undefined,
     }).then(setData).catch(err => setError(err instanceof Error ? err.message : 'Fehler beim Laden')).finally(() => setLoading(false));
   };
+  /** Automatisches Neuladen bei Filter- oder Seitenwechsel */
   useEffect(load, [page, statusFilter, priorityFilter, towerFilter]);
 
+  /** Spaltendefinition fuer die DataTable */
   const columns = [
     { key: 'ticket_number', header: 'Nummer' },
     { key: 'title', header: 'Titel' },
@@ -53,21 +93,34 @@ export default function TicketsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Service-Tickets</h1>
+        {/* Nur Service-Mitarbeiter und hoeher duerfen Tickets erstellen */}
         {hasMinRole('service') && <button onClick={() => setShowCreate(true)} className="btn btn-primary">+ Neues Ticket</button>}
       </div>
+
+      {/* === Filterleiste: Status, Prioritaet, Tower === */}
       <div className="card p-4 flex gap-3 items-end flex-wrap">
         <div className="w-48"><label className="label">Status</label><select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="input"><option value="">Alle</option><option value="open">Offen</option><option value="in_progress">In Bearbeitung</option><option value="pending">Wartend</option><option value="resolved">Gelöst</option><option value="closed">Geschlossen</option></select></div>
         <div className="w-48"><label className="label">Priorität</label><select value={priorityFilter} onChange={e => { setPriorityFilter(e.target.value); setPage(1); }} className="input"><option value="">Alle</option><option value="low">Niedrig</option><option value="medium">Mittel</option><option value="high">Hoch</option><option value="critical">Kritisch</option></select></div>
         <div className="w-64"><label className="label">Tower</label><select value={towerFilter} onChange={e => { setTowerFilter(e.target.value); setPage(1); }} className="input"><option value="">Alle Towers</option>{towers.map(t => <option key={t.id} value={t.id}>{t.name} ({t.serial_number})</option>)}</select></div>
       </div>
+
       {error && <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{error}</div>}
+
+      {/* Klick auf eine Zeile oeffnet die Ticket-Detailansicht */}
       <DataTable columns={columns} data={data?.data || []} isLoading={loading} emptyMessage="Keine Tickets vorhanden" pagination={data?.pagination} onPageChange={setPage} onRowClick={setSelected} />
+
       {showCreate && <CreateTicket towers={towers} onClose={() => setShowCreate(false)} onCreated={() => { setShowCreate(false); showToast('Ticket erstellt'); load(); }} />}
       {selected && <TicketDetail ticket={selected} onClose={() => setSelected(null)} onUpdated={() => { setSelected(null); showToast('Ticket aktualisiert'); load(); }} />}
     </div>
   );
 }
 
+/**
+ * Modal-Formular zum Erstellen eines neuen Service-Tickets.
+ * Pflichtfelder: Tower-Zuordnung und Titel.
+ * Optionale Felder: Beschreibung.
+ * Ticket-Typ (Wartung/Stoerung/Inspektion) und Prioritaet haben Standardwerte.
+ */
 function CreateTicket({ towers, onClose, onCreated }: { towers: Tower[]; onClose: () => void; onCreated: () => void }) {
   const [f, setF] = useState({ towerId: '', title: '', description: '', ticketType: 'maintenance', priority: 'medium' });
   const [error, setError] = useState('');
@@ -94,6 +147,12 @@ function CreateTicket({ towers, onClose, onCreated }: { towers: Tower[]; onClose
   );
 }
 
+/**
+ * Modal fuer die Detailansicht und Bearbeitung eines bestehenden Tickets.
+ * Zeigt Ticket-Informationen (Titel, Tower, Typ, Prioritaet, Zuweisungen, Erstelldatum)
+ * und erlaubt Service-Mitarbeitern die Aenderung von Status und Loesungsbeschreibung.
+ * Viewer sehen nur die Informationen ohne Bearbeitungsmoeglichkeit.
+ */
 function TicketDetail({ ticket, onClose, onUpdated }: { ticket: ServiceTicket; onClose: () => void; onUpdated: () => void }) {
   const [status, setStatus] = useState(ticket.status);
   const [resolution, setResolution] = useState(ticket.resolution || '');
@@ -109,6 +168,7 @@ function TicketDetail({ ticket, onClose, onUpdated }: { ticket: ServiceTicket; o
     <Modal isOpen onClose={onClose} title={`Ticket ${ticket.ticket_number}`} size="lg">
       <div className="space-y-4">
         {error && <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">{error}</div>}
+        {/* Ticket-Informationen im 2-Spalten-Grid */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div><span className="text-gray-500">Titel:</span> <span className="font-medium">{ticket.title}</span></div>
           <div><span className="text-gray-500">Tower:</span> <span className="font-medium">{ticket.tower_name}</span></div>
@@ -118,6 +178,7 @@ function TicketDetail({ ticket, onClose, onUpdated }: { ticket: ServiceTicket; o
           <div><span className="text-gray-500">Erstellt:</span> {new Date(ticket.created_at).toLocaleString('de-DE')}</div>
         </div>
         {ticket.description && <div><span className="text-sm text-gray-500">Beschreibung:</span><p className="mt-1 text-sm">{ticket.description}</p></div>}
+        {/* Bearbeitungsbereich: Nur fuer Service-Mitarbeiter und hoeher sichtbar */}
         {hasMinRole('service') && <>
           <hr />
           <div><label className="label">Status</label><select value={status} onChange={e => setStatus(e.target.value as TicketStatus)} className="input"><option value="open">Offen</option><option value="in_progress">In Bearbeitung</option><option value="pending">Wartend</option><option value="resolved">Gelöst</option><option value="closed">Geschlossen</option></select></div>
